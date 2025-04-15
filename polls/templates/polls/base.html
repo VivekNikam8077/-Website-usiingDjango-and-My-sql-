@@ -1,0 +1,908 @@
+{% load static %}
+{# हा बेस टेम्पलेट आहे जो इतर सर्व पेजेससाठी बेस लेआउट प्रदान करतो #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {# मेटा टॅग्स आणि पेज टाइटल #}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Voting System{% endblock %}</title>
+    
+    {# फेव्हिकॉन #}
+    <link rel="icon" href="{% static 'votingicon.png' %}" type="image/png">
+    <link rel="shortcut icon" href="{% static 'votingicon.png' %}" type="image/png">
+    
+    {# CSS फाइल्स #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    {# CSRF टोकन AJAX रिक्वेस्टसाठी #}
+    <script>
+        var csrftoken = "{{ csrf_token }}";
+    </script>
+    
+    <style>
+        {# प्रोफेशनल कलर पॅलेट #}
+        :root {
+            --primary-dark: #1D3557;   /* खोल निळा */
+            --primary: #457B9D;        /* मध्यम निळा */
+            --primary-light: #A8DADC;  /* हलका निळा */
+            
+            {# सेकंडरी पॅलेट #}
+            --secondary-dark: #2A9D8F;  /* टील */
+            --secondary: #E9C46A;      /* सोनेरी */
+            --secondary-light: #F4A261; /* हलका नारिंगी */
+            
+            {# न्यूट्रल पॅलेट #}
+            --neutral-dark: #2B2D42;    /* जवळजवळ काळा */
+            --neutral: #8D99AE;         /* मध्यम राखाडी */
+            --neutral-light: #EDF2F4;   /* ऑफ व्हाइट */
+            
+            {# अॅक्सेंट कलर्स #}
+            --accent-success: #2b9348;  /* हिरवा */
+            --accent-warning: #f48c06;  /* नारिंगी */
+            --accent-danger: #d62828;   /* लाल */
+            
+            {# टेक्स्ट कलर्स #}
+            --text-dark: #2B2D42;       /* गडद टेक्स्ट */
+            --text-medium: #505565;     /* मध्यम टेक्स्ट */
+            --text-light: #FFFFFF;      /* हलका टेक्स्ट */
+            
+            {# बॅकग्राउंड कलर्स #}
+            --bg-main: #FFFFFF;         /* पांढरा बॅकग्राउंड */
+            --bg-light: #F8F9FA;        /* हलका बॅकग्राउंड */
+            --bg-dark: #212529;         /* गडद बॅकग्राउंड */
+        }
+        
+        {# ग्लोबल अॅनिमेशन्स #}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+            50% { box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+            100% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        }
+        
+        {# वोटिंग आयकॉन अॅनिमेशन #}
+        @keyframes vote-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); opacity: 0.9; }
+            100% { transform: scale(1); }
+        }
+        
+        .navbar-brand .fa-vote-yea {
+            display: inline-block;
+            animation: vote-pulse 2s infinite ease-in-out;
+            transform-origin: center;
+            transition: color 0.3s ease;
+        }
+        
+        .navbar-brand:hover .fa-vote-yea {
+            color: var(--secondary);
+        }
+        
+        {# वोट नाऊ बटन स्टायलिंग #}
+        .btn-vote-now {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-vote-now:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .btn-vote-now .icon {
+            font-size: 1.2em;
+        }
+        
+        {# नेव्हिगेशन बार स्टायल्स #}
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%) !important;
+            padding: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+            padding: 0.5rem 1rem;
+        }
+        
+        {# नेव्हिगेशन ब्रँड स्टायल्स #}
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-light) !important;
+        }
+        
+        {# नेव्हिगेशन लिंक्स स्टायल्स #}
+        .nav-link {
+            font-weight: 500;
+            color: rgba(255,255,255,0.9) !important;
+            position: relative;
+            margin: 0 0.2rem;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-light) !important;
+        }
+        
+        {# ड्रॉपडाउन मेन्यू स्टायल्स #}
+        .dropdown-menu {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 0;
+            margin-top: 1rem;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            background: none;
+            transform: translateX(5px);
+        }
+        
+        .dropdown-item:active {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        .dropdown-divider {
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        {# लॉगिन बटन स्टायल्स #}
+        .btn-auth {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2)) !important;
+            border-radius: 25px !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            padding: 0.5rem 1.5rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+            margin-left: 8px !important;
+        }
+        
+        .btn-auth:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.3)) !important;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        {# मेन कंटेंट स्टायल्स #}
+        .content {
+            margin-top: 90px;
+            min-height: calc(100vh - 230px);
+            animation: fadeIn 0.5s ease;
+            padding-bottom: 2rem;
+        }
+        
+        {# नेव्हिगेशन बार अंतर्गत कंटेंट फिक्स #}
+        .main-content {
+            margin-top: 90px !important;
+            padding-top: 1.5rem;
+        }
+        
+        {# फूटर स्टायल्स #}
+        .footer {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%) !important;
+            padding: 3rem 0 2rem;
+            color: var(--text-light);
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .footer-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+        
+        .footer-title:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 40px;
+            height: 3px;
+            background: var(--secondary);
+            border-radius: 2px;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links li:hover {
+            transform: translateX(5px);
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.9) !important;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+        
+        .footer-links a:hover {
+            color: var(--text-light) !important;
+        }
+        
+        .footer-links a i {
+            margin-right: 8px;
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .social-icons a:hover {
+            background: var(--secondary);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-color: var(--secondary);
+        }
+        
+        .contact-info {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .contact-info li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+        
+        .contact-info li:hover {
+            transform: translateX(5px);
+        }
+        
+        .contact-info i {
+            margin-right: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            min-width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            color: var(--secondary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .contact-info li:hover i {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        hr.footer-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 2rem 0;
+        }
+        
+        .copyright-section {
+            padding-top: 1rem;
+        }
+        
+        .copyright-section p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+        
+        .footer-bottom-links {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .footer-bottom-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .footer-bottom-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .footer-bottom-links a:hover::after {
+            width: 100%;
+        }
+        
+        .footer-bottom-links a:hover {
+            color: white;
+        }
+        
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            display: block;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-logo:hover {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+        
+        .footer-about {
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 767px) {
+            .footer-section {
+                margin-bottom: 2rem;
+            }
+            
+            .social-icons {
+                margin-bottom: 1.5rem;
+            }
+            
+            .copyright-section {
+                text-align: center !important;
+            }
+            
+            .footer-bottom-links {
+                margin-top: 1rem;
+                justify-content: center;
+            }
+        }
+
+        /* User profile dropdown styling */
+        .user-dropdown-btn {
+            padding: 0.375rem 0.75rem;
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown-btn:hover, 
+        .user-dropdown-btn:focus {
+            background: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .user-avatar img.rounded-circle {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar i.fas.fa-user-circle {
+            font-size: 32px;
+            color: var(--primary);
+        }
+
+        .dropdown-toggle span {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .messages {
+            margin-bottom: 2rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-warning {
+            background: var(--accent-warning);
+            color: var(--text-dark);
+        }
+
+        .alert-success {
+            background: var(--accent-success);
+            color: white;
+        }
+
+        .alert-danger {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        .alert-info {
+            background: var(--primary-light);
+            color: var(--text-dark);
+        }
+
+        .btn {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            background: var(--bg-main);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .card-text {
+            color: var(--text-medium);
+        }
+
+        .footer {
+            background: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            color: var(--text-medium);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            color: var(--text-medium);
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .main-content {
+            flex: 1;
+            padding-bottom: 60px; /* Add padding to prevent footer overlap */
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            margin-top: auto;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: white;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #0c1529;
+            border-color: #0c1529;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'polls:index' %}">
+                <img src="{% static 'votingicon.png' %}" alt="Voting System" class="d-inline-block align-text-top me-2" style="height: 30px; width: auto;">
+                Voting System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:index' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:all_results' %}">
+                            <i class="fas fa-trophy me-1"></i>Results
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:my_votes' %}">
+                            <i class="fas fa-vote-yea me-1"></i>My Votes
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:create' %}">
+                            <i class="fas fa-plus-circle me-1"></i>Create Poll
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:admin_polls_list' %}">
+                            <i class="fas fa-cog me-1"></i>Manage Polls
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:manage_users' %}">
+                            <i class="fas fa-users-cog me-1"></i>Manage Users
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:about' %}">
+                            <i class="fas fa-info-circle me-1"></i>About Us
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'polls:contact' %}">
+                            <i class="fas fa-envelope me-1"></i>Contact
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle user-dropdown-btn" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <span>{{ user.username }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'polls:index' %}"><i class="fas fa-user"></i>Profile</a></li>
+                                {% if user.is_staff %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><span class="dropdown-header">Administration</span></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'polls:admin_polls_list' %}">
+                                            <i class="fas fa-tasks me-2"></i>Manage Polls
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'polls:manage_users' %}">
+                                            <i class="fas fa-users me-2"></i>Manage Users
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <!-- Compact auth buttons for all pages -->
+                        <div class="nav-compact-buttons">
+                            <a href="{% url 'login' %}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container main-content">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="{% url 'polls:about' %}" class="footer-link">About</a>
+                    <a href="{% url 'polls:contact' %}" class="footer-link">Contact</a>
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                </div>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

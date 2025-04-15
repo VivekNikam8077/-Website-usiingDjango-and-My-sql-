@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Polls | {{ site_title }}{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>Polls</h1>
+    
+    <div class="object-tools">
+        <a href="{% url 'admin:add_poll' %}" class="addlink">Add Poll</a>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Question</th>
+                <th>Choices</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for poll in polls %}
+            <tr>
+                <td>{{ poll.id }}</td>
+                <td>{{ poll.question }}</td>
+                <td>{{ poll.choices|length }} choices</td>
+                <td>
+                    <a href="{% url 'admin:poll_detail' poll.id %}">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No polls available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

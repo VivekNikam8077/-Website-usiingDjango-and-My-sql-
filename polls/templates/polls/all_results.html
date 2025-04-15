@@ -1,0 +1,230 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}All Poll Results{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="page-header">
+        <h1 class="page-title">All Poll Results</h1>
+        <a href="{% url 'polls:index' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Polls
+        </a>
+    </div>
+
+    {% if polls %}
+        <div class="results-grid">
+            {% for poll in polls %}
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <h3 class="poll-question">{{ poll.question }}</h3>
+                        <div class="poll-meta">
+                            <span class="poll-date">
+                                <i class="far fa-calendar-alt"></i>
+                                {{ poll.pub_date|date:"M d, Y" }}
+                            </span>
+                            <span class="poll-votes">
+                                <i class="fas fa-vote-yea"></i>
+                                {{ poll.total_votes }} votes
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card-body">
+                        {% if poll.choices.all %}
+                            {% for choice in poll.choices.all %}
+                                <div class="result-item">
+                                    <div class="result-info">
+                                        <span class="choice-text">{{ choice.choice_text }}</span>
+                                        <span class="vote-count">{{ choice.votes }} vote{{ choice.votes|pluralize }}</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ choice.votes_percentage }}%"
+                                             aria-valuenow="{{ choice.votes_percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ choice.votes_percentage }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-results">
+                                <p>This poll has no choices.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="result-card-footer">
+                        <a href="{% url 'polls:detail' poll.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-vote-yea me-1"></i>Vote
+                        </a>
+                        {% if user.is_superuser %}
+                            <a href="{% url 'polls:delete_poll' poll.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash-alt me-1"></i>Delete
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state text-center py-5">
+            <i class="fas fa-poll-h fa-3x mb-3 text-muted"></i>
+            <h3>No polls available</h3>
+            <p class="text-muted">There are no polls to display results for.</p>
+            <a href="{% url 'polls:index' %}" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Go to Home
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .results-page {
+        padding: 2rem 0;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .back-link {
+        color: var(--text-medium);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: var(--primary);
+        transform: translateX(-5px);
+    }
+
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .poll-question {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .poll-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-medium);
+    }
+
+    .poll-meta i {
+        margin-right: 0.3rem;
+    }
+
+    .result-card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+    }
+
+    .result-item {
+        margin-bottom: 1rem;
+    }
+
+    .result-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .result-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .choice-text {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+    }
+
+    .vote-count {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+    }
+
+    .progress {
+        height: 8px;
+        background-color: var(--bg-light);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+        transition: width 0.6s ease;
+    }
+
+    .result-card-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .empty-results {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-medium);
+    }
+
+    @media (max-width: 768px) {
+        .results-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .back-link {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %} 

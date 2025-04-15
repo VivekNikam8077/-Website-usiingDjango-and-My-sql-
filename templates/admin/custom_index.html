@@ -1,0 +1,11 @@
+{% extends "admin/index.html" %}
+
+{% block sidebar %}
+{{ block.super }}
+<div class="module" style="background: #fff; margin-top: 10px;">
+    <h2>Custom Admin</h2>
+    <ul>
+        <li><a href="{% url 'admin:polls_list' %}">Manage Polls</a></li>
+    </ul>
+</div>
+{% endblock %} 

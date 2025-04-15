@@ -1,0 +1,239 @@
+{% extends "polls/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-3">Create New Poll</h2>
+            <p class="text-muted">Add a new poll with multiple choices for users to vote on.</p>
+        </div>
+        <div class="col-md-4 text-md-end d-flex align-items-center justify-content-md-end">
+            <a href="{% url 'polls:admin_polls_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Polls
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0">Poll Information</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="pollForm">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="question" class="form-label">Question</label>
+                    <input type="text" class="form-control" name="question" id="question" placeholder="Enter your poll question" required>
+                    <div class="form-text">Make your question clear and concise for better results.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="department" class="form-label">Department Restriction (Optional)</label>
+                    <select class="form-select" name="department" id="department">
+                        <option value="none">No restriction - All users can vote</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}">{{ department.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">If selected, only users from this department will be able to vote on this poll.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Choices</h5>
+                        <button type="button" id="addChoiceBtn" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus me-1"></i> Add Option
+                        </button>
+                    </div>
+                    
+                    <div id="choicesContainer">
+                        <!-- Initial two required choices -->
+                        <div class="choice-item mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">1</span>
+                                <input type="text" class="form-control" name="choice1" placeholder="Enter choice" required>
+                            </div>
+                        </div>
+                        <div class="choice-item mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">2</span>
+                                <input type="text" class="form-control" name="choice2" placeholder="Enter choice" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i> You must provide at least two choices. You can add up to 5 choices total.
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <a href="{% url 'polls:admin_polls_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Poll
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.075);
+    }
+    
+    .form-control {
+        padding: 0.65rem 1rem;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .input-group-text {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+        font-weight: 600;
+        border: none;
+        width: 40px;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .choice-item {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .choice-item .btn-remove {
+        color: var(--accent-danger);
+        background: none;
+        border: none;
+        font-size: 1.1rem;
+        padding: 0 0.5rem;
+    }
+    
+    .choice-item .btn-remove:hover {
+        color: darkred;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const choicesContainer = document.getElementById('choicesContainer');
+        const addChoiceBtn = document.getElementById('addChoiceBtn');
+        let choiceCount = 2; // Start with 2 choices already added
+        
+        // Function to add a new choice field
+        function addChoiceField() {
+            // Check if we've reached the maximum number of choices
+            if (choiceCount >= 5) {
+                alert('Maximum of 5 choices allowed.');
+                return;
+            }
+            
+            choiceCount++;
+            
+            // Create new choice item
+            const choiceItem = document.createElement('div');
+            choiceItem.className = 'choice-item mb-3';
+            
+            // Create input group
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+            
+            // Create number label
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'input-group-text';
+            numberSpan.textContent = choiceCount;
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control';
+            input.name = 'choice' + choiceCount;
+            input.placeholder = 'Enter choice';
+            input.required = true;
+            
+            // Create remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-remove';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.onclick = function() {
+                choicesContainer.removeChild(choiceItem);
+                choiceCount--;
+                // Update the numbering
+                updateChoiceNumbers();
+                // Enable the add button again
+                addChoiceBtn.disabled = choiceCount >= 5;
+            };
+            
+            // Append elements
+            inputGroup.appendChild(numberSpan);
+            inputGroup.appendChild(input);
+            inputGroup.appendChild(removeBtn);
+            choiceItem.appendChild(inputGroup);
+            
+            // Add to container
+            choicesContainer.appendChild(choiceItem);
+            
+            // Disable add button if we've reached the maximum
+            addChoiceBtn.disabled = choiceCount >= 5;
+        }
+        
+        // Function to update choice numbers after removal
+        function updateChoiceNumbers() {
+            const choiceItems = choicesContainer.querySelectorAll('.choice-item');
+            choiceItems.forEach((item, index) => {
+                const numberSpan = item.querySelector('.input-group-text');
+                const input = item.querySelector('input');
+                
+                // Update the visible number
+                numberSpan.textContent = index + 1;
+                
+                // Update the input name
+                input.name = 'choice' + (index + 1);
+            });
+        }
+        
+        // Add event listener to the add button
+        addChoiceBtn.addEventListener('click', addChoiceField);
+    });
+</script>
+{% endblock %}
+{% endblock %} 

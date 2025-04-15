@@ -1,0 +1,600 @@
+{% extends 'polls/base.html' %}
+{% load static %}
+
+{# मुख्य पेज साठी टाइटल #}
+{% block title %}Home - Voting System{% endblock %}
+
+{% block content %}
+{# मुख्य कंटेंट क्षेत्र साइडबार लेआउटसह #}
+<div class="row">
+    {# डावी साइडबार - विभाग #}
+    <div class="col-lg-3 mb-4">
+        <div class="sidebar-container">
+            <div class="sidebar-header mb-3">
+                <h4 class="sidebar-title">Departments</h4>
+            </div>
+            
+            <div class="department-sidebar">
+                <div class="list-group department-list">
+                    <a href="#" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-globe me-2"></i> All Departments
+                    </a>
+                    {# सर्व विभागांची यादी दाखवणे #}
+                    {% for department in departments %}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i> {{ department.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                
+                {# फक्त स्टाफ मेंबरसाठी विभाग व्यवस्थापन बटन #}
+                {% if user.is_staff %}
+                <div class="mt-3">
+                    <a href="{% url 'polls:manage_departments' %}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-cog me-1"></i> Manage Departments
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# फीचर्ड विभाग पोल्स #}
+        <div class="sidebar-container mt-4">
+            <div class="sidebar-header mb-3">
+                <h4 class="sidebar-title">Featured Department</h4>
+            </div>
+            
+            {# विभागांची तपासणी आणि प्रथम विभागाचे पोल्स दाखवणे #}
+            {% if departments %}
+            {% with first_dept=departments.first %}
+            <div class="dept-feature">
+                <div class="dept-feature-header">
+                    <h5 class="dept-name">{{ first_dept.name }}</h5>
+                    <p class="dept-description small text-muted">{{ first_dept.description|truncatechars:80 }}</p>
+                </div>
+                
+                <div class="dept-featured-polls">
+                    {% for poll in polls %}
+                    {% if poll.department == first_dept %}
+                    <div class="dept-poll-item">
+                        <a href="{% url 'polls:detail' poll.id %}" class="dept-poll-link">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="dept-poll-question">{{ poll.question|truncatechars:40 }}</span>
+                                <span class="dept-poll-votes badge bg-light text-dark">{{ poll.total_votes }} votes</span>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="dept-footer mt-3">
+                    <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-poll me-1"></i> View All {{ first_dept.name }} Polls
+                    </a>
+                </div>
+            </div>
+            {% endwith %}
+            {% else %}
+            <div class="empty-departments">
+                <p>No departments available</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# मुख्य कंटेंट क्षेत्र #}
+    <div class="col-lg-9">
+        {# सर्व पोल्स सेक्शन #}
+        <div class="polls-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title">Polls</h2>
+                <div class="poll-filters">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary active" data-filter="recent">Recent</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="popular">Popular</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+            {# सर्व पोल्स प्रदर्शित करणे #}
+            {% for poll in polls %}
+                <div class="col-md-6">
+                    <div class="poll-card">
+                        <div class="poll-card-header">
+                            <h3 class="poll-question">{{ poll.question }}</h3>
+                            <div class="poll-meta">
+                                <span class="poll-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    {{ poll.pub_date|date:"M d, Y" }}
+                                </span>
+                                <span class="poll-votes">
+                                    <i class="fas fa-vote-yea"></i>
+                                    {{ poll.total_votes }} votes
+                                </span>
+                                {% if poll.department %}
+                                <span class="poll-department">
+                                    <i class="fas fa-users"></i>
+                                    {{ poll.department.name }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="poll-card-body">
+                            <div class="choices-preview">
+                                {# पहिल्या 3 पर्यायांचे प्रीव्यू प्रदर्शित करणे #}
+                                {% for choice in poll.choices.all|slice:":3" %}
+                                <div class="choice-item">
+                                    <div class="choice-text">{{ choice.choice_text }}</div>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: {{ choice.votes_percentage }}%">
+                                            {{ choice.votes_percentage }}%
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if poll.choices.count > 3 %}
+                                <div class="more-choices">
+                                    +{{ poll.choices.count|add:"-3" }} more choices
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="poll-card-footer">
+                            <a href="{% url 'polls:detail' poll.id %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-vote-yea me-1"></i>Vote Now
+                            </a>
+                            <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-chart-bar me-1"></i>View Results
+                            </a>
+                            {# सुपरयूजर्ससाठी पोल डिलीट करण्याचा पर्याय #}
+                            {% if user.is_superuser %}
+                            <a href="{% url 'polls:delete_poll' poll.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash-alt me-1"></i>Delete
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="empty-state text-center py-5">
+                        <h3>No polls available</h3>
+                        <p class="text-muted">Polls will appear here when they become available.</p>
+                        {% if user.is_authenticated %}
+                            {% if user.is_staff %}
+                            <a href="{% url 'polls:create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Create Poll
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Vote
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* सामान्य स्टाइल्स */
+    :root {
+        --primary-color: #14213d;
+        --secondary-color: #8d99ae;
+        --accent-color: #fca311;
+        --text-dark: #343a40;
+        --text-medium: #6c757d;
+        --bg-light: #f8f9fa;
+    }
+
+    /* सेक्शन हेडर स्टाइल्स */
+    .section-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-subtitle {
+        color: var(--text-medium);
+        font-size: 1.1rem;
+    }
+    
+    /* साइडबार स्टाइल्स */
+    .sidebar-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        position: sticky;
+        top: 20px;
+        border-top: 4px solid var(--secondary-color);
+    }
+    
+    .sidebar-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #343a40;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .sidebar-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: var(--secondary-color);
+        border-radius: 2px;
+    }
+    
+    .department-sidebar {
+        margin-top: 1.5rem;
+    }
+    
+    .department-list .list-group-item {
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 0.7rem 1rem;
+        transition: all 0.2s ease;
+        color: #495057;
+    }
+    
+    .department-list .list-group-item:hover {
+        background-color: rgba(141, 153, 174, 0.05);
+        border-color: rgba(141, 153, 174, 0.1);
+    }
+    
+    .department-list .list-group-item.active {
+        background: var(--secondary-color);
+        border-color: transparent;
+        box-shadow: 0 4px 10px rgba(141, 153, 174, 0.2);
+    }
+
+    /* Regular Poll Cards */
+    .poll-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border-top: 4px solid var(--secondary-color);
+    }
+
+    .poll-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .poll-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: rgba(250, 250, 252, 0.7);
+    }
+
+    .poll-question {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0.5rem;
+    }
+
+    .poll-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .poll-meta i {
+        margin-right: 0.3rem;
+        color: var(--secondary-color);
+    }
+    
+    .poll-department i {
+        color: var(--primary-color);
+    }
+
+    .poll-card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        background-color: white;
+    }
+
+    .choices-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .choice-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .choice-text {
+        font-size: 0.9rem;
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: #f1f3f5;
+    }
+
+    .progress-bar {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        font-size: 0.75rem;
+        line-height: 8px;
+        text-align: right;
+        padding-right: 5px;
+    }
+
+    .more-choices {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-medium);
+        margin-top: 0.5rem;
+    }
+
+    .poll-card-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        gap: 0.5rem;
+        background-color: rgba(250, 250, 252, 0.7);
+    }
+
+    /* Empty States */
+    .empty-featured, .empty-popular, .empty-departments, .empty-state {
+        text-align: center;
+        padding: 2rem;
+        background: var(--bg-light);
+        border-radius: 12px;
+        color: var(--text-medium);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .sidebar-container {
+            position: static;
+            margin-bottom: 2rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .section-title {
+            font-size: 1.6rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1rem;
+        }
+    }
+
+    /* Department Featured Polls */
+    .dept-feature {
+        margin-top: 1rem;
+    }
+    
+    .dept-feature-header {
+        margin-bottom: 1rem;
+    }
+    
+    .dept-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+    
+    .dept-featured-polls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .dept-poll-item {
+        background-color: var(--bg-light);
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .dept-poll-item:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+    
+    .dept-poll-link {
+        padding: 0.5rem 0.8rem;
+        display: block;
+        color: var(--text-dark);
+        text-decoration: none;
+    }
+    
+    .dept-poll-question {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .dept-poll-votes {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    /* Button styles */
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: #0c1529;
+        border-color: #0c1529;
+    }
+    
+    .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-primary.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-outline-danger {
+        color: #ef233c;
+        border-color: #ef233c;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #ef233c;
+        border-color: #ef233c;
+    }
+</style>
+
+<script>
+    // Poll filtering functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Trigger the 'recent' filter by default when the page loads
+        document.querySelector('[data-filter="recent"]').click();
+        
+        document.querySelectorAll('.poll-filters .btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.poll-filters .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filterType = this.dataset.filter;
+                
+                // Sort and filter based on the selected filter
+                if (filterType === 'recent') {
+                    // Sort by date (most recent first)
+                    const pollsContainer = document.querySelector('.polls-section .row');
+                    const pollElements = Array.from(document.querySelectorAll('.col-md-6')).sort((a, b) => {
+                        const dateA = new Date(a.querySelector('.poll-date').textContent.trim());
+                        const dateB = new Date(b.querySelector('.poll-date').textContent.trim());
+                        return dateB - dateA; // Most recent first
+                    });
+                    
+                    // Clear the container
+                    pollsContainer.innerHTML = '';
+                    
+                    // Append the sorted elements
+                    pollElements.forEach(element => {
+                        pollsContainer.appendChild(element);
+                    });
+                    
+                    // Show sorting indicator
+                    showSortingInfo('Showing most recent polls first');
+                    
+                } else if (filterType === 'popular') {
+                    // Sort by votes (most votes first)
+                    const pollsContainer = document.querySelector('.polls-section .row');
+                    const pollElements = Array.from(document.querySelectorAll('.col-md-6')).sort((a, b) => {
+                        const votesA = parseInt(a.querySelector('.poll-votes').textContent.trim().split(' ')[0]);
+                        const votesB = parseInt(b.querySelector('.poll-votes').textContent.trim().split(' ')[0]);
+                        return votesB - votesA; // Most votes first
+                    });
+                    
+                    // Clear the container
+                    pollsContainer.innerHTML = '';
+                    
+                    // Append the sorted elements
+                    pollElements.forEach(element => {
+                        pollsContainer.appendChild(element);
+                    });
+                    
+                    // Show sorting indicator
+                    showSortingInfo('Showing most popular polls first');
+                }
+            });
+        });
+    });
+    
+    // Helper function to show sorting info
+    function showSortingInfo(message) {
+        let infoElement = document.querySelector('.sorting-info');
+        if (!infoElement) {
+            infoElement = document.createElement('div');
+            infoElement.className = 'sorting-info alert alert-info mt-2 mb-4';
+            const pollFiltersDiv = document.querySelector('.poll-filters').parentNode;
+            pollFiltersDiv.parentNode.insertBefore(infoElement, pollFiltersDiv.nextSibling);
+        }
+        infoElement.textContent = message;
+        infoElement.style.display = 'block';
+    }
+    
+    // Helper function to hide sorting info
+    function hideSortingInfo() {
+        const infoElement = document.querySelector('.sorting-info');
+        if (infoElement) {
+            infoElement.style.display = 'none';
+        }
+    }
+    
+    // Department filtering (sidebar)
+    document.querySelectorAll('.department-list .list-group-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all items
+            document.querySelectorAll('.department-list .list-group-item').forEach(i => {
+                i.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            const deptName = this.textContent.trim().replace('All Departments', '');
+            
+            // Filter polls by department
+            const pollCards = document.querySelectorAll('.poll-card');
+            
+            if (deptName === '') {
+                // Show all polls
+                pollCards.forEach(card => {
+                    card.closest('.col-md-6').style.display = 'block';
+                });
+                showSortingInfo('Showing polls from all departments');
+            } else {
+                // Show only polls from the selected department
+                pollCards.forEach(card => {
+                    const deptElement = card.querySelector('.poll-department');
+                    if (deptElement && deptElement.textContent.trim().includes(deptName)) {
+                        card.closest('.col-md-6').style.display = 'block';
+                    } else {
+                        card.closest('.col-md-6').style.display = 'none';
+                    }
+                });
+                showSortingInfo('Showing polls from ' + deptName + ' department');
+            }
+        });
+    });
+</script>
+{% endblock %} 

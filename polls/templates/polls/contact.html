@@ -1,0 +1,136 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h2 class="section-title">Contact Us</h2>
+    </div>
+    
+    <div class="contact-container">
+        <div class="contact-info">
+            <h3 class="contact-subtitle">Get in Touch</h3>
+            <p>Have questions, feedback, or need support? Fill out the form and we'll get back to you as soon as possible.</p>
+            
+            <div class="contact-details">
+                <div class="contact-detail-item">
+                    <div class="detail-icon">📧</div>
+                    <div class="detail-text">
+                        <strong>Email:</strong><br>
+                        support@djangovoting.com
+                    </div>
+                </div>
+                
+                <div class="contact-detail-item">
+                    <div class="detail-icon">📞</div>
+                    <div class="detail-text">
+                        <strong>Phone:</strong><br>
+                        +1 (555) 123-4567
+                    </div>
+                </div>
+                
+                <div class="contact-detail-item">
+                    <div class="detail-icon">📍</div>
+                    <div class="detail-text">
+                        <strong>Address:</strong><br>
+                        123 Web Dev Street<br>
+                        San Francisco, CA 94123
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="contact-form-container">
+            <h3 class="contact-subtitle">Send Us a Message</h3>
+            <form method="post" action="{% url 'polls:contact' %}" class="contact-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="name" class="form-label">Your Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject" class="form-label">Subject</label>
+                    <input type="text" id="subject" name="subject" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-contact">Send Message</button>
+            </form>
+        </div>
+    </div>
+    
+    <style>
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+        }
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .contact-info, .contact-form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 30px;
+        }
+        .contact-subtitle {
+            color: #1a1a2e;
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .contact-info p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 30px;
+        }
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .contact-detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        .detail-icon {
+            font-size: 24px;
+            color: #4CAF50;
+        }
+        .detail-text {
+            flex: 1;
+            line-height: 1.5;
+        }
+        .btn-contact {
+            background-color: #4CAF50;
+            font-weight: 600;
+            padding: 12px 30px;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+    </style>
+{% endblock %} 

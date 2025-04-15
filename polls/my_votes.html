@@ -1,0 +1,106 @@
+{% extends 'polls/base.html' %}
+
+{# माझे मतदान पृष्ठ शीर्षक #}
+{% block title %}My Votes{% endblock %}
+
+{% block content %}
+{# माझे मतदान पृष्ठ हेडर #}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 mb-4">{{ title }}</h1>
+            <p class="lead mb-5">{{ message }}</p>
+        </div>
+    </div>
+    
+    {# मतदान केलेल्या पोल्सची यादी #}
+    <div class="row g-4">
+        {% for poll in polls %}
+            {% if poll.has_user_voted %}
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ poll.question }}</h5>
+                            
+                            {# वापरकर्त्याचे मतदान केलेले पर्याय #}
+                            <div class="votes-list mt-3">
+                                {% for choice in poll.choices.all %}
+                                    <div class="vote-item">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>{{ choice.choice_text }}</span>
+                                            <span class="badge bg-secondary">{{ choice.votes }} vote{{ choice.votes|pluralize }}</span>
+                                        </div>
+                                        <div class="progress mb-3" style="height: 8px;">
+                                            <div class="progress-bar {% if choice.is_user_vote %}bg-primary{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ choice.votes_percentage }}%;" 
+                                                 aria-valuenow="{{ choice.votes_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {# पोल डेटा माहिती #}
+                            <div class="meta text-muted mt-3">
+                                <small>
+                                    <i class="far fa-calendar-alt me-1"></i> {{ poll.pub_date|date:"M d, Y" }}
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-vote-yea me-1"></i> {{ poll.total_votes }} total votes
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-chart-bar me-1"></i> Full Results
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% empty %}
+            {# कोणतेही मतदान न केल्यास दिसेल #}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i> No votes yet</h5>
+                    <p class="mb-0">You haven't voted on any polls yet. When you cast your votes, they will appear here.</p>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{% url 'polls:index' %}" class="btn btn-primary">
+                        <i class="fas fa-vote-yea me-2"></i> Browse Available Polls
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* पोल कार्ड स्टाइल्स */
+    .card {
+        border: none;
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* प्रगती पट्टी स्टाइल्स */
+    .progress {
+        background-color: #f5f5f5;
+        overflow: hidden;
+    }
+    
+    /* यूजर व्होट पर्यायासाठी हायलाइट स्टाइल */
+    .bg-primary {
+        background: linear-gradient(90deg, #457b9d, #1d3557) !important;
+    }
+    
+    /* मेटा माहिती स्टाइल्स */
+    .meta {
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %} 

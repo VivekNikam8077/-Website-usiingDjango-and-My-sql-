@@ -1,0 +1,170 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}Manage Departments{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-3">Manage Departments</h2>
+            <p class="text-muted">Create and manage departments for organizing users and restricting poll access.</p>
+        </div>
+        <div class="col-md-4 text-md-end d-flex align-items-center justify-content-md-end">
+            <a href="{% url 'polls:admin_polls_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-list me-1"></i> Manage Polls
+            </a>
+            <a href="{% url 'polls:manage_users' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-users me-1"></i> Manage Users
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Department List -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Departments</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if departments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for department in departments %}
+                                <tr>
+                                    <td>{{ department.name }}</td>
+                                    <td>{{ department.description|default:"-" }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'polls:delete_department' department.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this department? This cannot be undone.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-4">
+                        <p class="text-muted mb-0">No departments have been created yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Department Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Add Department</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="department_select" class="form-label">Predefined Departments</label>
+                            <select class="form-select mb-2" id="department_select" onchange="fillDepartmentForm(this.value)">
+                                <option value="">-- Select a Department --</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Law">Law Department</option>
+                                <option value="Marketing">Marketing Department</option>
+                            </select>
+                            <div class="form-text mb-3">Or create a custom department below</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Department Name</label>
+                            <input type="text" class="form-control" id="id_name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="id_description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Add Department
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Department Info</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Computer Science</strong> - Focuses on computing, programming, and technology studies</p>
+                    <p class="mb-1"><strong>Law Department</strong> - Legal studies, regulations, and judiciary focus</p>
+                    <p class="mb-0"><strong>Marketing Department</strong> - Business promotion, advertising, and market research</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.075);
+    }
+    
+    .table th {
+        font-weight: 600;
+        color: var(--text-medium);
+        border-bottom-width: 1px;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+</style>
+
+<script>
+    function fillDepartmentForm(value) {
+        if (value === '') {
+            document.getElementById('id_name').value = '';
+            document.getElementById('id_description').value = '';
+            return;
+        }
+        
+        const descriptions = {
+            'Computer Science': 'Department focused on computing technologies, programming, and computer engineering.',
+            'Law': 'Department focused on legal studies, regulations, and judiciary matters.',
+            'Marketing': 'Department focused on business promotion, advertising strategies, and market research.'
+        };
+        
+        document.getElementById('id_name').value = value;
+        document.getElementById('id_description').value = descriptions[value] || '';
+    }
+</script>
+{% endblock %} 

@@ -1,0 +1,115 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}Delete Poll{% endblock %}
+
+{% block content %}
+    <div class="delete-header">
+        <h2 class="delete-title">Delete Poll</h2>
+        <a href="{% url 'polls:index' %}" class="back-link">← Back to polls</a>
+    </div>
+    
+    <div class="delete-card">
+        <div class="warning-message">
+            <div class="warning-icon">⚠️</div>
+            <p>Are you sure you want to delete the following poll?</p>
+        </div>
+        
+        <div class="poll-info">
+            <h3 class="poll-question">{{ poll.question }}</h3>
+            <div class="poll-details">
+                <p><strong>Created:</strong> {{ poll.pub_date|date:"F d, Y - H:i" }}</p>
+                <p><strong>Number of choices:</strong> {{ poll.choices.count }}</p>
+            </div>
+        </div>
+        
+        <div class="delete-actions">
+            <form method="post" action="{% url 'polls:delete_poll' poll.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-delete">Confirm Delete</button>
+                <a href="{% url 'polls:index' %}" class="btn btn-cancel">Cancel</a>
+            </form>
+        </div>
+    </div>
+    
+    <style>
+        .delete-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .delete-title {
+            font-size: 28px;
+            margin: 0;
+            color: #1a1a2e;
+        }
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .delete-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 30px;
+        }
+        .warning-message {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+        }
+        .warning-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .warning-message p {
+            margin: 0;
+            font-size: 16px;
+            color: #856404;
+        }
+        .poll-info {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .poll-question {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #1a1a2e;
+        }
+        .poll-details {
+            color: #555;
+        }
+        .poll-details p {
+            margin: 8px 0;
+        }
+        .delete-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            margin-right: 10px;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+        }
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+    </style>
+{% endblock %} 

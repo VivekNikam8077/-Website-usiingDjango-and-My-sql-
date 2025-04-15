@@ -1,0 +1,128 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-3">Edit Department for {{ user_obj.username }}</h2>
+            <p class="text-muted">Assign or change the department for this user.</p>
+        </div>
+        <div class="col-md-4 text-md-end d-flex align-items-center justify-content-md-end">
+            <a href="{% url 'polls:manage_users' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to User Management
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0">User Information</h5>
+        </div>
+        <div class="card-body">
+            <!-- User Info Summary -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Username</h6>
+                    <p class="mb-3">{{ user_obj.username }}</p>
+                    
+                    <h6 class="text-muted mb-2">Email</h6>
+                    <p class="mb-0">{{ user_obj.email|default:"Not provided" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Full Name</h6>
+                    <p class="mb-3">{{ user_obj.get_full_name|default:"Not provided" }}</p>
+                    
+                    <h6 class="text-muted mb-2">Current Department</h6>
+                    <p class="mb-0">{{ user_obj.profile.department|default:"None" }}</p>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- Department Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Display any form errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <p><strong>Please correct the following errors:</strong></p>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="id_department" class="form-label">Department</label>
+                    <select class="form-select" id="id_department" name="department">
+                        <option value="">-- No Department --</option>
+                        {% for department in form.fields.department.queryset %}
+                            <option value="{{ department.id }}" {% if user_obj.profile.department == department %}selected{% endif %}>{{ department.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Select the department for this user. Leave empty to remove department assignment.</div>
+                </div>
+                
+                <div class="text-end">
+                    <a href="{% url 'polls:manage_users' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.075);
+    }
+    
+    .form-select {
+        padding: 0.65rem 1rem;
+        border-radius: 8px;
+    }
+    
+    .form-select:focus {
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    h6.text-muted {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,101 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}Login - Voting System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">Welcome Back</h2>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Your username and password didn't match. Please try again.
+                        </div>
+                    {% endif %}
+                    <form method="post" action="{% url 'login' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="id_username" name="username" required>
+                            <div class="invalid-feedback">
+                                Please enter your username.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="id_password" name="password" required>
+                            <div class="invalid-feedback">
+                                Please enter your password.
+                            </div>
+                        </div>
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}" class="text-muted">Forgot your password?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(69, 123, 157, 0.25);
+    }
+    
+    .btn-primary {
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %} 

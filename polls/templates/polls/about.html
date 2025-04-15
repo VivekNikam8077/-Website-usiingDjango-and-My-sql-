@@ -1,0 +1,119 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}About - Voting System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="display-4 text-center mb-4">About Voting System</h1>
+                    
+                    <div class="about-content">
+                        <p class="lead text-center mb-4">
+                            A professional voting platform designed to facilitate secure and efficient polling.
+                        </p>
+                        
+                        <div class="developers-section text-center mb-5">
+                            <h3 class="mb-3">Developers</h3>
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="developer-card p-3">
+                                        <h4>Vivek Nikam</h4>
+                                        <p class="text-muted">Lead Developer</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="developer-card p-3">
+                                        <h4>Sairaj Pawar</h4>
+                                        <p class="text-muted">Developer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="features-section">
+                            <h3 class="text-center mb-4">Key Features</h3>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="feature-item">
+                                        <i class="fas fa-shield-alt fa-2x mb-3"></i>
+                                        <h4>Secure Voting</h4>
+                                        <p>Ensures the integrity and confidentiality of every vote cast.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="feature-item">
+                                        <i class="fas fa-users fa-2x mb-3"></i>
+                                        <h4>Department Management</h4>
+                                        <p>Organize polls by departments for targeted voting.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="feature-item">
+                                        <i class="fas fa-chart-bar fa-2x mb-3"></i>
+                                        <h4>Real-time Results</h4>
+                                        <p>View poll results instantly with visual representations.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="feature-item">
+                                        <i class="fas fa-user-shield fa-2x mb-3"></i>
+                                        <h4>Role-based Access</h4>
+                                        <p>Different access levels for users, staff, and administrators.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .about-content {
+        min-height: calc(100vh - 300px); /* Ensures minimum height for footer positioning */
+    }
+    
+    .developer-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+    }
+    
+    .developer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-item i {
+        color: #14213d;
+    }
+    
+    .feature-item h4 {
+        margin: 1rem 0;
+        color: #343a40;
+    }
+    
+    .feature-item p {
+        color: #6c757d;
+    }
+</style>
+{% endblock %} 
